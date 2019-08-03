@@ -28,7 +28,7 @@ const r2 = require("r2");
 const express = require('express');
 const router = express.Router();
 
-const TELEGRAM_BOT_TOKEN = process.env.PORT || "tgdev";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "tgdev";
 const API_BASE_ULR = "https://api.telegram.org/"
 const TELEGRAM_WEBOOK_BASE_URL = process.env.TELEGRAM_WEBOOK_BASE_URL
 
