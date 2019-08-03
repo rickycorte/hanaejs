@@ -30,12 +30,16 @@ const express = require('express');
 const app = express();
 const path = require('path');
 
+const telegram = require('./telegram/core')
+
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../static')));
 
 /* ======================================================================================== */
 // routes
+
+app.use(telegram.router);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
@@ -58,6 +62,10 @@ app.use((req, res, next) =>{
 app.listen(PORT, async () => {
     console.log("Hanae JS is distributed under AGPL-3.0 (see LICENCE.md)");
     console.log("Copyright (C) 2019  RickyCorte (https://rickycorte.com)\n");
+
+    console.log("Loading...");
+    await telegram.init();
+
     console.log(`Listening on port ${PORT}`);
     console.log('Press Ctrl+C to quit.');
   });
