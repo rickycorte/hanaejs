@@ -62,15 +62,15 @@ async function init()
 
 /**
  * generate message reply
- * @param {*} data 
+ * @param {*} message 
  */
-function onMessageReceived(data)
+function onMessageReceived(message)
 {
     let reply = {};
 
-    if(data["text"])
+    if(message["text"])
     {
-        reply = {"method":"sendMessage", "text":"Echo: "+data["text"] };
+        reply = {"method":"sendMessage", "text":"Echo: "+message["text"], "chat_id": message["chat"]["id"]};
     }
     else
     {
