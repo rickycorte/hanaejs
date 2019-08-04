@@ -29,7 +29,7 @@ const express = require('express');
 const router = express.Router();
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "tgdev";
-const API_BASE_ULR = "https://api.telegram.org/"
+const API_BASE_ULR = "https://api.telegram.org"
 const TELEGRAM_WEBOOK_BASE_URL = process.env.TELEGRAM_WEBOOK_BASE_URL
 
 async function init()
@@ -42,9 +42,13 @@ async function init()
     else
     {
         let resp = await r2(API_BASE_ULR + "/bot" + TELEGRAM_BOT_TOKEN + "/setWebhook?url="+TELEGRAM_WEBOOK_BASE_URL+"/telegram/"+TELEGRAM_BOT_TOKEN).json;
-        if(resp["result"] != "ok")
+        if(!resp["result"])
         {
-            console.log("Unable to set telegram webhook");
+            console.log("Unable to set telegram webhook: %j", resp);
+        }
+        else
+        {
+            console.log("Set webhook to: " + TELEGRAM_WEBOOK_BASE_URL + "/telegram/<your token here :3>");
         }
     }
 
@@ -98,6 +102,8 @@ function onTelegramUpdate(req, reply)
         console.log("Not supported message received!");
         reply.send("ok"); // inform telegram that message has been evaluated 
     }
+
+    console.log("Update received : %j", body);
 }
 
 /* ======================================================================================== */
