@@ -25,7 +25,12 @@
 
 if(!process.env.RELEASE)
 {
-  require('dotenv').config()
+  require('dotenv').config();
+  console.log(" ~ DEBUG ENV ~\n");
+}
+else
+{
+  console.log(" ~ RELEASE ENV ~\n");
 }
 
 const PORT = process.env.PORT || 8080;
