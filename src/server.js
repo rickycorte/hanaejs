@@ -33,7 +33,7 @@ else
   console.log(" ~ RELEASE ENV ~\n");
 }
 
-const PORT = process.env.PORT || 8080;
+const PORT = Number(process.env.PORT) || 8080;
 
 
 const express = require('express');
