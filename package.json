@@ -13,9 +13,11 @@
     },
     "dependencies": {
         "express": "^4.17.1",
+        "firebase-admin": "^8.3.0",
         "r2": "^2.0.1"
     },
     "devDependencies": {
+        "async-polling": "^0.2.1",
         "dotenv": "^8.0.0"
     }
 }

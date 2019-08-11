@@ -20,6 +20,15 @@
 'use strict';
 
 
+const PORT = Number(process.env.PORT) || 8080;
+
+const express = require('express');
+const app = express();
+const path = require('path');
+
+const telegram = require('./telegram/bot')
+
+
 /* ======================================================================================== */
 // init & conf
 
@@ -33,14 +42,6 @@ else
   console.log(" ~ RELEASE ENV ~\n");
 }
 
-const PORT = Number(process.env.PORT) || 8080;
-
-
-const express = require('express');
-const app = express();
-const path = require('path');
-
-const telegram = require('./telegram/core')
 
 
 app.use(express.json())
@@ -69,13 +70,35 @@ app.use((req, res, next) =>{
 
 /* ======================================================================================== */
 // app run
+
+
 app.listen(PORT, async () => {
     console.log("Hanae JS is distributed under AGPL-3.0 (see LICENCE.md)");
     console.log("Copyright (C) 2019  RickyCorte (https://rickycorte.com)\n");
 
     console.log("Loading...");
+    
     await telegram.init();
 
     console.log(`Listening on port ${PORT}`);
     console.log('Press Ctrl+C to quit.');
   });
+
+
+//polling for local test
+if(!process.env.RELEASE)
+{
+  const AsyncPolling = require('async-polling');
+
+  (async function()
+  {
+      await telegram.init();
+
+      AsyncPolling(function (end) 
+      {        
+          telegram.poll();      
+          end();  
+       }, 3000).run();
+  } )();
+
+}
