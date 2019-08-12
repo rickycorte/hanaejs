@@ -22,7 +22,7 @@
 
 const admin = require('firebase-admin');
 
-const BOT_DB_NAME = "hanae"; // in future this won't be hardcoded 
+const BOT_DB_NAME = process.env.BOT_DB_NAME | "hanae"; // in future this won't be hardcoded 
 
 
 //db structure names
