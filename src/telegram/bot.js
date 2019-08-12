@@ -49,8 +49,9 @@ const USR_REPLACER = "{usr}";
  */
 function onMessageReceived(message)
 {
-    let reply = {};
+    let reply = "ok";
 
+    /*
     if(message["text"])
     {
         reply = {"method":"sendMessage", "text":"Echo: "+message["text"], "chat_id": message["chat"]["id"]};
@@ -59,6 +60,7 @@ function onMessageReceived(message)
     {
         reply = "ok";
     }
+    */
 
     return reply;
 }
