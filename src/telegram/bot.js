@@ -99,7 +99,7 @@ function checkNewMemberEvent(message)
         {
             let res = null;
 
-            if(urs["username"] == BOT_DATA["usr"]) // bot added to chat
+            if(usr["username"] == BOT_DATA["usr"]) // bot added to chat
                 res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
             else 
                 res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
