@@ -100,20 +100,6 @@ function checkNewMemberEvent(message)
     {
         let usr = message["new_chat_members"][0]
 
-<<<<<<< HEAD
-            if(usr["username"] == BOT_DATA["usr"]) // bot added to chat
-                res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
-            else 
-                res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
-            
-            if(res)
-                return res;
-        });
-    }
-    else
-    {
-        return null;
-=======
         if(usr["username"] == BOT_DATA["usr"]) // bot added to chat
         {
             res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
@@ -123,7 +109,6 @@ function checkNewMemberEvent(message)
             res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
         }
         
->>>>>>> master
     }
 
     return res;
