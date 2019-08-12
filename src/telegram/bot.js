@@ -80,7 +80,8 @@ function onEvent(name, chat_id, dest = "")
     if(ev)
     {
         let idx = Math.floor(ev.length * Math.random());
-        reply = {"method":"sendMessage", "text": ev[idx].replace(USR_REPLACER, dest), "chat_id":chat_id};
+        let reply = {"method":"sendMessage", "text": ev[idx].replace(USR_REPLACER, dest), "chat_id":chat_id};
+        return reply;
     }
 
     return null;
@@ -93,25 +94,24 @@ function onEvent(name, chat_id, dest = "")
  */
 function checkNewMemberEvent(message)
 {
+    let res = null;
+
     if(message["new_chat_members"])
     {
-        message["new_chat_members"].forEach( usr => 
-        {
-            let res = null;
+        let usr = message["new_chat_members"][0]
 
-            if(urs["username"] == BOT_DATA["usr"]) // bot added to chat
-                res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
-            else 
-                res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
-            
-            if(res)
-                return res;
-        });
+        if(usr["username"] == BOT_DATA["usr"]) // bot added to chat
+        {
+            res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
+        }
+        else 
+        {
+            res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
+        }
+        
     }
-    else
-    {
-        return null;
-    }
+
+    return res;
 }
 
 
@@ -131,7 +131,7 @@ function onTelegramUpdate(body)
     if(body["message"])
     {
         let ev = checkNewMemberEvent(body["message"]);
-        if(ev)
+        if(ev != null)
             return ev;
 
         return onMessageReceived(body["message"]); // create reply

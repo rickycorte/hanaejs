@@ -109,7 +109,7 @@ async function loadEvents()
         let ev = await db.collection(BOT_DB_NAME).doc(BOT_EVENTS_LBL).get();
         if(ev.exists)
         {
-            return ev;
+            return ev.data();
         }
         else
         {
