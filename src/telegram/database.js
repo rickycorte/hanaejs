@@ -26,7 +26,8 @@ const BOT_DB_NAME = "hanae"; // in future this won't be hardcoded
 
 
 //db structure names
-const BOT_INFO = "info";
+const BOT_INFO_LBL = "info";
+const BOT_EVENTS_LBL = "events";
 
 let db = null;
 
@@ -89,7 +90,7 @@ async function getBotInfo()
 {
     try
     {
-        let info = await db.collection(BOT_DB_NAME).doc(BOT_INFO).get();
+        let info = await db.collection(BOT_DB_NAME).doc(BOT_INFO_LBL).get();
         return info.data();
         
     }
@@ -101,8 +102,30 @@ async function getBotInfo()
 }
 
 
+async function loadEvents()
+{
+    try
+    {
+        let ev = await db.collection(BOT_DB_NAME).doc(BOT_EVENTS_LBL).get();
+        if(ev.exists)
+        {
+            return ev;
+        }
+        else
+        {
+            throw new Error(BOT_EVENTS_LBL + " document does not exist");
+        }
+    }
+    catch(err)
+    {
+        console.log("Unable to load events: "+ err);
+        return null;
+    }
+}
+
 
 /* ======================================================================================== */
 // Exports
 exports.init = init;
 exports.getBotInfo = getBotInfo;
+exports.loadEvents = loadEvents;

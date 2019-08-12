@@ -29,7 +29,13 @@ const API_BASE_ULR = "https://api.telegram.org"
 
 
 let BOT_DATA = null;
+let BOT_EVENTS = null;
 
+
+const EV_NEW_MEMBER = "new_member";
+const EV_BOT_ADDED = "bot_added";
+
+const USR_REPLACER = "{usr}";
 
 //init is at the end of the file because routes need to know the bot logic in order to work
 
@@ -57,6 +63,57 @@ function onMessageReceived(message)
     return reply;
 }
 
+
+/**
+ * Create a reply for an event
+ * @param {*} name 
+ * @param {*} chat_id
+ * @param {*} dest user name to target the message
+ * 
+ * if null event is not handled
+ */
+function onEvent(name, chat_id, dest = "")
+{
+    let ev = BOT_EVENTS[name];
+    if(ev)
+    {
+        let idx = Math.floor(ev.length * Math.random());
+        reply = {"method":"sendMessage", "text": ev[idx].replace(USR_REPLACER, dest), "chat_id":chat_id};
+    }
+
+    return null;
+}
+
+
+/**
+ * return reply if event is handled, null if not
+ * @param {*} message 
+ */
+function checkNewMemberEvent(message)
+{
+    if(message["new_chat_members"])
+    {
+        message["new_chat_members"].forEach( usr => 
+        {
+            let res = null;
+
+            if(urs["username"] == BOT_DATA["usr"]) // bot added to chat
+                res = onEvent(EV_BOT_ADDED, message["chat"]["id"]);
+            else 
+                res = onEvent(EV_NEW_MEMBER, message["chat"]["id"], usr["first_name"]);
+            
+            if(res)
+                return res;
+        });
+    }
+    else
+    {
+        return null;
+    }
+}
+
+
+
 /**
  * Replay to telegram update
  * @param {*} req 
@@ -71,6 +128,10 @@ function onTelegramUpdate(body)
 
     if(body["message"])
     {
+        let ev = checkNewMemberEvent(body["message"]);
+        if(ev)
+            return ev;
+
         return onMessageReceived(body["message"]); // create reply
     }
     else if(body["edit_message"])
@@ -167,6 +228,21 @@ async function removeWebhook()
 }
 
 
+async function getBotusername()
+{
+    let resp = await r2(API_BASE_ULR + "/bot" + BOT_DATA["tkn"] + "/getMe").json;
+    if(!resp["result"])
+    {
+        console.log("Unable to get bot username: " + JSON.stringify(resp));
+        return "";
+    }
+    else
+    {
+        console.log("Bot username: "+ resp["result"]["username"]);
+        return resp["result"]["username"];
+    }
+}
+
 
 /**
  * Initialize telegram bot
@@ -176,6 +252,7 @@ async function init()
     db.init();
 
     BOT_DATA = await db.getBotInfo();
+    BOT_DATA["usr"] = await getBotusername();
 
     if(process.env.RELEASE)
     {
@@ -188,6 +265,8 @@ async function init()
         //polling
         removeWebhook();
     }
+
+    BOT_EVENTS = await db.loadEvents();
 }
 
 

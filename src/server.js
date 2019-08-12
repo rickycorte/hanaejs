@@ -78,7 +78,8 @@ app.listen(PORT, async () => {
 
     console.log("Loading...");
     
-    await telegram.init();
+    if(process.env.RELEASE)
+      await telegram.init();
 
     console.log(`Listening on port ${PORT}`);
     console.log('Press Ctrl+C to quit.');
