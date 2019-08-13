@@ -28,6 +28,7 @@ const BOT_DB_NAME = process.env.BOT_DB_NAME || "hanae"; // in future this won't 
 //db structure names
 const BOT_INFO_LBL = "info";
 const BOT_EVENTS_LBL = "events";
+const BOT_TRIGGERS_LBL = "triggers";
 
 let db = null;
 
@@ -101,7 +102,9 @@ async function getBotInfo()
     }
 }
 
-
+/**
+ * Load bot events handlers
+ */
 async function loadEvents()
 {
     try
@@ -123,9 +126,49 @@ async function loadEvents()
     }
 }
 
+/**
+ * Load bot triggers
+ * null if not found
+ */
+async function loadTriggers()
+{
+    let tr_arr = {"require_name": [], "unnamed": [] };
+
+    try
+    {
+        let ev = await db.collection(BOT_DB_NAME).doc(BOT_TRIGGERS_LBL).get();
+        if(ev.exists)
+        {
+            for(let key in ev.data())
+            {
+
+               let itm = ev.data()[key];
+               itm["name"] = key; 
+
+                if(itm["rnm"] == true)
+                    tr_arr["require_name"].push(itm);
+                else
+                    tr_arr["unnamed"].push(itm);
+
+            }
+            
+            return tr_arr;
+        }
+        else
+        {
+            throw new Error(BOT_TRIGGERS_LBL + " document does not exist");
+        }
+    }
+    catch(err)
+    {
+        console.log("Unable to load triggers: "+ err);
+        return null;
+    }
+}
 
 /* ======================================================================================== */
 // Exports
 exports.init = init;
 exports.getBotInfo = getBotInfo;
 exports.loadEvents = loadEvents;
+exports.loadTriggers = loadTriggers;

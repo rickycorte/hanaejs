@@ -30,18 +30,65 @@ const API_BASE_ULR = "https://api.telegram.org"
 
 let BOT_DATA = null;
 let BOT_EVENTS = null;
-
+let BOT_TRIGGERS = null;
+let NAME_REGEX = null;
 
 const EV_NEW_MEMBER = "new_member";
 const EV_BOT_ADDED = "bot_added";
 
 const USR_REPLACER = "{usr}";
 
+
 //init is at the end of the file because routes need to know the bot logic in order to work
 
 /* ======================================================================================== */
 // Logic
 
+    //TODO: add message with only bot name as event
+
+/**
+ * Search for a trigger in the message
+ * @param {*} message 
+ */    
+function searchTextTrigger(message)
+{
+    if(!BOT_TRIGGERS)
+        return null;
+    
+    let text = message["text"].toLowerCase();
+
+    let isReply = message["reply_to_message"] && message["reply_to_message"]["from"]["username"] == BOT_DATA["usr"];
+    let isPvt = message["chat"]["type"] == "private";
+
+    if(isPvt || isReply || text.match(NAME_REGEX))
+    {
+        //regular named triggers
+        for(let i = 0; i < BOT_TRIGGERS["require_name"].length; i++)
+        {
+            if(text.match(BOT_TRIGGERS["require_name"][i]))
+                return BOT_TRIGGERS["require_name"][i];
+        }
+    }    
+    else
+    {
+        //unnamed triggers
+        for(let i = 0; i < BOT_TRIGGERS["unnamed"].length; i++)
+        {
+            if(text.match(BOT_TRIGGERS["unnamed"][i]))
+                return BOT_TRIGGERS["unnamed"][i];
+        }
+    }
+
+    return null;
+
+}
+
+
+function getTriggerReplyText(trigger)
+{
+    let idx = Math.floor(trigger["out"].length * Math.random());
+    return trigger["out"][idx];
+}
 
 /**
  * generate message reply
@@ -51,16 +98,34 @@ function onMessageReceived(message)
 {
     let reply = "ok";
 
-    /*
     if(message["text"])
     {
-        reply = {"method":"sendMessage", "text":"Echo: "+message["text"], "chat_id": message["chat"]["id"]};
+        let trigger = searchTextTrigger(message);
+
+        let rpltxt = null;
+
+        if(trigger != null)
+        {
+            console.log("Trigger found : "+ trigger["name"]);
+
+            rpltxt = getTriggerReplyText(trigger).replace(USR_REPLACER, message["from"]["first_name"]);
+        }
+        else
+        {
+            // fallback trigger here
+            console.log("no trigger found :L");
+            return null;
+        }
+
+        if(rpltxt)
+            reply = {"method":"sendMessage", "text": rpltxt, "chat_id": message["chat"]["id"]};
+        else
+            reply = "ok"; 
     }
     else
     {
         reply = "ok";
     }
-    */
 
     return reply;
 }
@@ -230,6 +295,9 @@ async function removeWebhook()
 }
 
 
+/**
+ * Request bot username from api
+ */
 async function getBotusername()
 {
     let resp = await r2(API_BASE_ULR + "/bot" + BOT_DATA["tkn"] + "/getMe").json;
@@ -245,6 +313,78 @@ async function getBotusername()
     }
 }
 
+
+/**
+ * Compile a trigger into a regex to use to check
+ * @param {} trigger 
+ */
+function compileTrigger(trigger)
+{
+    let rgx = "\\b(";
+
+    for(let i =0; i < trigger["in"].length; i++)
+    {
+        rgx += trigger["in"][i].toLowerCase();
+
+        if(i != trigger["in"].length -1)
+            rgx += "|";
+    }
+
+    rgx += ")\\b";
+    
+    return rgx;
+}
+
+
+/**
+ * Load triggers from database and compile them into regex
+ */
+async function loadAndCompileTriggers()
+{
+    let trg = await db.loadTriggers();
+
+    if(trg == null)
+        return null;
+
+    console.log("Compiling triggers...");
+
+    for(let i =0; i < trg["require_name"].length; i++)
+    {
+        trg["require_name"][i]["rgx"] = compileTrigger(trg["require_name"][i]);
+        console.log("Compiled " + trg["require_name"][i]["name"] + " to: " + trg["require_name"][i]["rgx"] );
+    }
+
+    for(let i =0; i < trg["unnamed"].length; i++)
+    {
+        trg["unnamed"][i]["rgx"] = compileTrigger(trg["unnamed"][i]);
+        console.log("Compiled " + trg["unnamed"][i]["name"] + " to: " + trg["unnamed"][i]["rgx"] );
+    }
+
+    return trg;
+}
+
+
+/**
+ * Compile the possibile names (+ username) into a check regex
+ */
+function compileNameChecker()
+{
+    BOT_DATA["nms"].push(BOT_DATA["usr"]);
+
+    let rgx = "\\b(";
+
+    for(let i =0; i < BOT_DATA["nms"].length; i++)
+    {
+        rgx += BOT_DATA["nms"][i].toLowerCase();
+
+        if(i != BOT_DATA["nms"].length -1)
+            rgx += "|";
+    }
+
+    rgx += ")\\b";
+    
+    return rgx;
+}
 
 /**
  * Initialize telegram bot
@@ -269,6 +409,11 @@ async function init()
     }
 
     BOT_EVENTS = await db.loadEvents();
+    BOT_TRIGGERS = await loadAndCompileTriggers();
+
+    //compile name regex
+    NAME_REGEX = compileNameChecker();
+
 }
 
 
