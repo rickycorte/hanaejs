@@ -20,18 +20,6 @@
 'use strict';
 
 
-const PORT = Number(process.env.PORT) || 8080;
-
-const express = require('express');
-const app = express();
-const path = require('path');
-
-const telegram = require('./telegram/bot')
-
-
-/* ======================================================================================== */
-// init & conf
-
 if(!process.env.RELEASE)
 {
   require('dotenv').config();
@@ -44,6 +32,22 @@ else
 
 
 
+const PORT = Number(process.env.PORT) || 8080;
+
+const express = require('express');
+const app = express();
+const path = require('path');
+
+const telegram = require('./telegram/bot');
+const auth = require("./web/auth");
+const webAPI = require("./web/webAPI");
+
+
+
+/* ======================================================================================== */
+// init & conf
+
+
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../static')));
 
@@ -52,9 +56,15 @@ app.use(express.static(path.join(__dirname, '../static')));
 
 app.use(telegram.router);
 
+app.use("/web", auth.router);
+
+app.use("/web", webAPI.router);
+
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
-  })
+  });
+
 
 /* ======================================================================================== */
 // errors
@@ -79,7 +89,10 @@ app.listen(PORT, async () => {
     console.log("Loading...");
     
     if(process.env.RELEASE)
+    {
       await telegram.init();
+      auth.init();
+    }
 
     console.log(`Listening on port ${PORT}`);
     console.log('Press Ctrl+C to quit.');
@@ -94,6 +107,7 @@ if(!process.env.RELEASE)
   (async function()
   {
       await telegram.init();
+      auth.init();
 
       AsyncPolling(function (end) 
       {        
