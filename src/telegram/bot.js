@@ -65,7 +65,7 @@ function searchTextTrigger(message)
         //regular named triggers
         for(let i = 0; i < BOT_TRIGGERS["require_name"].length; i++)
         {
-            if(text.match(BOT_TRIGGERS["require_name"][i]))
+            if(text.match(BOT_TRIGGERS["require_name"][i]["rgx"]))
                 return BOT_TRIGGERS["require_name"][i];
         }
     }    
@@ -74,7 +74,7 @@ function searchTextTrigger(message)
         //unnamed triggers
         for(let i = 0; i < BOT_TRIGGERS["unnamed"].length; i++)
         {
-            if(text.match(BOT_TRIGGERS["unnamed"][i]))
+            if(text.match(BOT_TRIGGERS["unnamed"][i]["rgx"]))
                 return BOT_TRIGGERS["unnamed"][i];
         }
     }
