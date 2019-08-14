@@ -22,6 +22,8 @@
 const admin = require('firebase-admin');
 
 const USER_DB = "users"; // in future this won't be hardcoded 
+const BOT_TRIGGERS_LBL = "triggers";
+const BOT_DB_NAME = process.env.BOT_DB_NAME || "hanae";
 
 let db = null;
 
@@ -69,7 +71,43 @@ async function isUserInDB(user)
     return false;
 }
 
+
+/**
+ * Right now this loads only triggers
+ */
+async function loadTriggersAndEvents()
+{
+    let tr_arr = { "triggers": [] };
+
+    try
+    {
+        let ev = await db.collection(BOT_DB_NAME).doc(BOT_TRIGGERS_LBL).get();
+        if(ev.exists)
+        {
+            for(let key in ev.data())
+            {
+
+               let itm = ev.data()[key];
+               itm["name"] = key; 
+               tr_arr["triggers"].push(itm);
+            }
+            
+            return tr_arr;
+        }
+        else
+        {
+            throw new Error(BOT_TRIGGERS_LBL + " document does not exist");
+        }
+    }
+    catch(err)
+    {
+        console.log("Unable to load triggers: "+ err);
+        return null;
+    }
+}
+
 /* ======================================================================================== */
 // exports
 exports.init = init;
 exports.isUserInDB = isUserInDB;
+exports.loadTriggersAndEvents = loadTriggersAndEvents;

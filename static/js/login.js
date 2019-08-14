@@ -31,7 +31,7 @@ if(token != "")
 {
         $.ajax({
         type: "get",
-        url: "web/check",
+        url: "../web/check",
         beforeSend: (req) => 
         {
             req.setRequestHeader("x-access-token", token);
@@ -43,6 +43,7 @@ if(token != "")
             {
                 //redirect to logged page
                 console.log("Already logged :3");
+                 window.location.href = "../web";
             }
         }
         });
@@ -56,7 +57,7 @@ function tryLogin()
     $.ajax(
         {
             type:"post",
-            url:"web/login",
+            url:"../web/login",
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({ "user": $("#userID").val() }),
@@ -68,6 +69,7 @@ function tryLogin()
                 {
                     setCookie("token", data["token"], 1);
                     console.log("Logged in :3");
+                    window.location.href = "../web";
                 }
                 else
                 {

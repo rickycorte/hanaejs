@@ -22,6 +22,7 @@
 
 const express = require('express');
 const checkMw = require("./jwtMiddleware");
+const noCacheMw = require("./noCacheMiddleware");
 const db = require("./database");
 const jwt = require('jsonwebtoken');
 
@@ -48,7 +49,7 @@ function init()
 /**
  * Check if authtoken is still valid
  */
-router.get('/check', checkMw, (req, res) => {
+router.get('/check', checkMw, noCacheMw , (req, res) => {
 
     res.status(200).send({
         result: "ok",
@@ -62,7 +63,7 @@ router.get('/check', checkMw, (req, res) => {
 /**
  * Log the user in
  */
-router.post('/login',  async function (req, res) {
+router.post('/login', noCacheMw, async function (req, res) {
 
     try {
         console.log("Login request: %j", req.body);

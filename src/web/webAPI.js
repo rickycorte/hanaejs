@@ -21,18 +21,33 @@
 
 const express = require('express');
 var path = require('path'); 
+const db = require("./database");
+
+const checkMw = require("./jwtMiddleware");
+
 const router = express.Router();
 
-
+const noCacheMw = require("./noCacheMiddleware");
 
 /* ======================================================================================== */
 // init & conf
 
 
-router.get("/", (req, res)=> {
+router.get("/triggers", checkMw, noCacheMw, async (req, res) =>{
+
+    let trg = await db.loadTriggersAndEvents();
+    //console.log(trg);
+    res.send(trg);
+});
+
+
+router.get("/login", (req, res)=> {
     res.sendFile(path.join(__dirname, '../../static/login.html'));
 });
 
+router.get("/", (req, res)=> {
+    res.sendFile(path.join(__dirname, '../../static/manager.html'));
+});
 
 
 /* ======================================================================================== */
