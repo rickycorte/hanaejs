@@ -31,7 +31,7 @@ if(token != "")
 {
         $.ajax({
         type: "get",
-        url: "../web/check",
+        url: "../auth/check",
         beforeSend: (req) => 
         {
             req.setRequestHeader("x-access-token", token);
@@ -57,7 +57,7 @@ function tryLogin()
     $.ajax(
         {
             type:"post",
-            url:"../web/login",
+            url:"../auth/login",
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({ "user": $("#userID").val() }),

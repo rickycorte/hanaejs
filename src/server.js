@@ -56,7 +56,7 @@ app.use(express.static(path.join(__dirname, '../static')));
 
 app.use(telegram.router);
 
-app.use("/web", auth.router);
+app.use("/auth", auth.router);
 
 app.use("/web", webAPI.router);
 

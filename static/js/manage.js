@@ -115,7 +115,7 @@ if(token != "")
 {
     $.ajax({
     type: "get",
-    url: "web/check",
+    url: "auth/check",
     beforeSend: (req) => 
     {
         req.setRequestHeader("x-access-token", token);

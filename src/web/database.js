@@ -60,7 +60,10 @@ async function isUserInDB(user)
         console.log("Searching user: " + user);
         let doc = await db.collection(USER_DB).doc(user).get();
         if(doc.exists)
+        {
+            console.log("User found");
             return true;
+        }
     }
     catch(err)
     {
@@ -68,6 +71,7 @@ async function isUserInDB(user)
         return false;
     }
 
+    console.log("User not found");
     return false;
 }
 
