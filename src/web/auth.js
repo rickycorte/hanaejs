@@ -84,7 +84,7 @@ router.post('/login', noCacheMw, async function (req, res) {
         return res.status(400).send({
             result: "error",
             auth: false,
-            message: "Please check your request data!"
+            message: "Please check your request data!" + err
         });
     }
 
