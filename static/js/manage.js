@@ -158,6 +158,11 @@ function rebuildTriggerPage()
 }
 
 
+function enableSubmit()
+{
+  $("#applyButton").removeClass("d-none");
+}
+
 /****************************************************************
  * 
  * TRIGGER ITEM EDIT MODAL
@@ -179,6 +184,7 @@ function editModalDeleteBtn(list_item, target_name) {
   trg[dt_idx["w"]].splice(dt_idx["i"], 1);
   list_item.remove();
   $("#editModal").modal("hide");
+  enableSubmit();
 }
 
 
@@ -197,6 +203,7 @@ function editModalEditBtn(list_item, target_name, subdata_index, isout) {
   list_item.find("p").text(newVal);
 
   $("#editModal").modal("hide");
+  enableSubmit();
 }
 
 
@@ -252,6 +259,7 @@ function AddTriggerModalInsert(target_name, dest_arr) {
   addTriggerSubItem(target_name, dest_arr, newVal);
 
   $("#editModal").modal("hide");
+  enableSubmit();
 }
 
 function openAddTriggerItemModal(target_name, dest_arr) {
@@ -298,6 +306,7 @@ function UpdateTriggerDelete(trigger_name)
     }
 
     $("#" + trigger_name).remove();
+    enableSubmit();
 }
 
 /**
@@ -316,6 +325,7 @@ function UpdateTriggerSaveChanges(trigger_name)
   rebuildTriggerPage();
 
   $("#editModal").modal("hide");
+  enableSubmit();
 }
 
 /**
@@ -346,6 +356,73 @@ function openUpdateTriggerModal(trigger_name) {
   $("#editModal").modal("show");
 }
 
+
+/****************************************************************
+ * 
+ * CREATE NEW TRIGGER MODAL
+ * 
+ *****************************************************************/
+
+/**
+ * UpdateMoal save callback
+ * @param {*} trigger_name 
+ */
+function CreateTriggerSaveChanges()
+{
+
+  let trigger_name = $("#editModalData").val();
+
+  let trigger = searchTriggerByName(trigger_name);
+
+  if(trigger || !trigger_name)
+  {
+    //no duplicate
+    $("#editModal").modal("hide");
+    console.log("Detected duplicate");
+    return;
+  }
+
+
+  trigger  = {};
+
+  trigger.rnm = $("#editModalRequireBotName").prop("checked");
+  trigger.name = trigger_name;
+  trigger.in = [];
+  trigger.out = [];
+
+  //update ui
+
+  LOADED_DATA.triggers.push(trigger);
+
+  addTrigger(trigger);
+
+  $("#editModal").modal("hide");
+  enableSubmit();
+}
+
+/**
+ * Open create trigger modal
+ */
+function openCreateTriggerModal() {
+
+  $("#editModalTitle").text("Create a new trigger");
+
+  //set value in field
+  $("#editModalData").val("");
+
+  $("#editModalRequireBotName").prop('checked', true);
+
+
+  //set callbacks
+  $("#editModalDelete").addClass("d-none");
+
+  $("#editModalUpdate").unbind("click");
+  $("#editModalDelete").unbind("click");
+
+  $("#editModalUpdate").click(() => { CreateTriggerSaveChanges(); });
+
+  $("#editModal").modal("show");
+}
 
 /****************************************************************
  * 
@@ -402,6 +479,8 @@ function makeTriggerPage(token) {
         addTrigger(data["triggers"][i]);
       }
 
+      $("#createNewTrigger").click( () => { openCreateTriggerModal(); });
+
     },
     error: (req) => {
       console.log("Something went wrong :L");
@@ -451,4 +530,43 @@ else {
   console.log("No session");
   window.location.href = "web/login";
 }
+
+
+/****************************************************************
+* 
+* SUBMIT
+* 
+*****************************************************************/
+
+$(document).ready( ()=> {
+
+  $("#applyButton").click( ()=>
+  {
+    console.log("Everybody gonna QUACK <3");
+  
+    $("#applyButton").addClass("d-none");
+    $("#block-overlay").removeClass("d-none");
+  
+    $.ajax({
+      type: "post",
+      url: "web/update",
+      contentType: "application/json",
+      dataType: "json",
+      beforeSend: (req) => {
+        req.setRequestHeader("x-access-token", token);
+      },
+      data: JSON.stringify(LOADED_DATA),
+      success: data => {
+        console.log("Updated :3");
+        $("#block-overlay").addClass("d-none"); 
+      },
+      error: (req) => {
+        console.log("Something went wrong :L");
+        $("#block-overlay").addClass("d-none");
+      }
+    });
+  
+  
+  });
+});
 

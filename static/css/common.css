@@ -3,3 +3,24 @@
 {
     cursor: pointer;
 }
+
+.overlay
+{
+    height: 100%; 
+    width: 100%;
+    position: absolute; 
+     top: 0px; 
+     right: 0px; 
+     left: 0px; 
+     bottom: 0px;
+     opacity: 0.8;
+     background-color: #968f8f;
+}
+
+.abs-center
+{
+    position: absolute;
+     top:50%;
+     left:50%;
+    transform: translate(-50%, -50%);
+}

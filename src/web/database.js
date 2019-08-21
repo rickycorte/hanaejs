@@ -110,8 +110,24 @@ async function loadTriggersAndEvents()
     }
 }
 
+
+async function updateTriggers(triggers)
+{
+
+    try
+    {
+        await db.collection(BOT_DB_NAME).doc(BOT_TRIGGERS_LBL).update(triggers);
+    }
+    catch(err)
+    {
+        console.log("Unable to save triggers: "+ err);
+    }
+}
+
+
 /* ======================================================================================== */
 // exports
 exports.init = init;
 exports.isUserInDB = isUserInDB;
 exports.loadTriggersAndEvents = loadTriggersAndEvents;
+exports.updateTriggers = updateTriggers;

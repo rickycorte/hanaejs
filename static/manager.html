@@ -18,6 +18,7 @@
   <body>
       <nav class="navbar sticky-top navbar-light bg-dark text-white">
           <h6 style="width: 100%; font-size:0.7em;" class="text-center">Hanae Open Platform</h6>
+          <button class="btn btn-primary d-none" style="font-size:0.7em; position: absolute; right: 3px; top: 3px;" id="applyButton">Apply Changes</button>
         </nav>
 
         <div class="container-fluid">
@@ -27,7 +28,7 @@
 
             <hr>
 
-            <h2>Triggers<i class="fas fa-plus text-right clickable trg_add_in" style="margin-left: 10px;"></i></h2>
+            <h2>Triggers<i class="fas fa-plus text-right clickable" id="createNewTrigger" style="margin-left: 10px;"></i></h2>
             <div class="row" style="padding-right:10px; padding-left:10px;" id="TriggerContainer">
                         
             </div>
@@ -65,6 +66,8 @@
         </div>
       </div>
       <!-- Modal END -->
+
+      <div class="overlay d-none" id="block-overlay"><h3 class="abs-center text-white" >Applying changes...</h3></div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
