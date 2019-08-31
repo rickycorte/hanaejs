@@ -1,5 +1,5 @@
 {
-    "name": "Hanae",
+    "name": "hanaejs",
     "description": "Yet another telegram bot :L",
     "version": "0.0.1",
     "main": "src/server.js",
@@ -11,13 +11,20 @@
     "scripts": {
         "start": "node src/server.js"
     },
+    "_moduleAliases": {
+        "@database": "src/database",
+        "@middleware": "src/middleware",
+        "@telegram": "src/telegram",
+        "@web": "src/web"
+    },
     "dependencies": {
         "bcryptjs": "^2.4.3",
         "express": "^4.17.1",
-        "express-validator": "^6.1.1",
-        "firebase-admin": "^8.3.0",
         "jsonwebtoken": "^8.5.1",
-        "r2": "^2.0.1"
+        "module-alias": "^2.2.1",
+        "mongodb": "^3.3.2",
+        "r2": "^2.0.1",
+        "uuid": "^3.3.3"
     },
     "devDependencies": {
         "async-polling": "^0.2.1",

@@ -21,10 +21,11 @@
 
 
 const express = require('express');
-const checkMw = require("./jwtMiddleware");
-const noCacheMw = require("./noCacheMiddleware");
-const db = require("./database");
 const jwt = require('jsonwebtoken');
+
+const checkMw = require("@middleware/jwtVerify");
+const noCacheMw = require("@middleware/forceNoCache");
+const db = require("@database/database");
 
 const router = express.Router();
 
@@ -41,15 +42,28 @@ function makeJWTToken(userID) {
 // routes
 
 
-function init()
+async function init()
 {
-    db.init();
+    if(!await db.hasUsers())
+    {
+        await db.createUser("admin", "adminpwd");
+        console.log("Created default admin user");
+    }
+
+    console.log("Auth: ready");
 }
+
+
+async function login(req, res)
+{
+
+} 
+
 
 /**
  * Check if authtoken is still valid
  */
-router.get('/check', checkMw, noCacheMw , (req, res) => {
+router.get('auth/check', checkMw, noCacheMw , (req, res) => {
 
     res.status(200).send({
         result: "ok",
@@ -63,7 +77,7 @@ router.get('/check', checkMw, noCacheMw , (req, res) => {
 /**
  * Log the user in
  */
-router.post('/login', noCacheMw, async function (req, res) {
+router.post('auth/login', noCacheMw, async function (req, res) {
 
     try {
         console.log("Login request: %j", req.body);
@@ -93,5 +107,5 @@ router.post('/login', noCacheMw, async function (req, res) {
 
 /* ======================================================================================== */
 // exports
-exports.init = init;
 exports.router = router;
+exports.init = init;

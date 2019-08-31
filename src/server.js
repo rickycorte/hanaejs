@@ -19,28 +19,28 @@
 
 'use strict';
 
+require('module-alias/register');
+
+/* ======================================================================================== */
+// Load debug env
 
 if(!process.env.RELEASE)
 {
-  require('dotenv').config();
+  require("dotenv").config();
   console.log(" ~ DEBUG ENV ~\n");
 }
-else
-{
-  console.log(" ~ RELEASE ENV ~\n");
-}
 
-
-
-const PORT = Number(process.env.PORT) || 8080;
+/* ======================================================================================== */
+// Imports
 
 const express = require('express');
-const app = express();
 const path = require('path');
 
-const telegram = require('./telegram/bot');
+const database = require("./database/database");
 const auth = require("./web/auth");
-const webAPI = require("./web/webAPI");
+
+//const telegram = require('./telegram/bot');
+//const webAPI = require("./web/webAPI");
 
 
 
@@ -48,72 +48,103 @@ const webAPI = require("./web/webAPI");
 // init & conf
 
 
-app.use(express.json())
-app.use(express.static(path.join(__dirname, '../static')));
+const PORT = Number(process.env.PORT) || 8080;
+const RELEASE = process.env.RELEASE || false;
+
+
+const app = express();
+
+
+function setupApp()
+{
+  app.use(express.json())
+  app.use(express.static(path.join(__dirname, '../static')));
+}
 
 /* ======================================================================================== */
 // routes
 
-app.use(telegram.router);
 
-app.use("/auth", auth.router);
-
-app.use("/web", webAPI.router);
-
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
-  });
-
+function setupRoutes()
+{
+  app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
+    });
+}
 
 /* ======================================================================================== */
 // errors
 
-// Set 404 reply for all wrong routes
-app.use((req, res, next) =>{
+function setupErrorHandlers()
+{
+  // Set 404 reply for all wrong routes
+  app.use(require("./middleware/nonFound"));
 
-    let reply = { "status": "error", "message": "Check your data baka!" };
-    res.status(404);
-    res.send(reply);
-  });
+  //setup generig 500 error for exceptions
+  app.use(require("./middleware/exceptionHandler"));
+}
 
 
 /* ======================================================================================== */
-// app run
+// app runners
 
 
-app.listen(PORT, async () => {
-    console.log("Hanae JS is distributed under AGPL-3.0 (see LICENCE.md)");
-    console.log("Copyright (C) 2019  RickyCorte (https://rickycorte.com)\n");
-
-    console.log("Loading...");
-    
-    if(process.env.RELEASE)
-    {
-      await telegram.init();
-      auth.init();
-    }
-
-    console.log(`Listening on port ${PORT}`);
-    console.log('Press Ctrl+C to quit.');
-  });
-
-
-//polling for local test
-if(!process.env.RELEASE)
+/**
+ * Entry point of the program, run async inits here
+ */
+async function onAppStart()
 {
-  const AsyncPolling = require('async-polling');
-
-  (async function()
-  {
-      await telegram.init();
-      auth.init();
-
-      AsyncPolling(function (end) 
-      {        
-          telegram.poll();      
-          end();  
-       }, 3000).run();
-  } )();
-
+  console.log("Hanae JS is distributed under AGPL-3.0 (see LICENCE.md)");
+  console.log("Copyright (C) 2019  RickyCorte (https://rickycorte.com)\n");
+  
+  await database.init();
+  await auth.init();
 }
+
+
+/**
+ * This function is run when the express server is ready to listent to connections
+ */
+function onAppReady()
+{
+  console.log(`Listening on port ${PORT}`);
+
+  database.getBots();
+}
+
+
+/**
+ * Debug polling for local telegram debug
+ * @param {*} end 
+ */
+function debugTelegramPolling(end)
+{
+  //run code
+  end();
+}
+
+
+/**
+ * Start the express server and (if debugging) telegram polling 
+ */
+function runApp()
+{
+  app.listen(PORT , onAppReady);
+
+  if(!RELEASE)
+  {
+    const AsyncPolling = require('async-polling');
+    AsyncPolling(debugTelegramPolling, 3000).run();
+  }
+}
+
+
+
+/* ======================================================================================== */
+// RUN APPLICATION
+
+onAppStart()
+.then(setupApp)
+.then(setupRoutes)
+.then(setupErrorHandlers)
+.then(runApp);

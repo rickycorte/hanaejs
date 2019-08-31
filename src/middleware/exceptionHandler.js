@@ -19,11 +19,23 @@
 
 'use strict';
 
-
-function removeCache(req, res, next)  
+/**
+ * Return 500 page for internal throws of error
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+function exceptionHandler(req, res, next)
 {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    next();
+
+    console.error(err.stack);
+
+    let reply = { "status": "error", "message": "Internal error: "+ err.message};
+    res.status(err.code || 500);
+    res.send(reply);
+
 }
 
-module.exports = removeCache;
+/*=============================================================================*/
+
+module.exports = exceptionHandler;

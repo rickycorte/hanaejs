@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "module": "commonjs",
+      "paths": {
+        "@database/*": ["./src/database/*"],
+        "@middleware/*": ["./src/middleware/*"],
+        "@telegram/*": ["./src/telegram/*"],
+        "@web/*": ["./src/web/*"]
+      }
+    }
+  }
