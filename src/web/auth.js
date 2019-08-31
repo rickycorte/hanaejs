@@ -44,7 +44,8 @@ function makeJWTToken(userID) {
 
 async function init()
 {
-    if(!await db.hasUsers())
+    let res = await db.hasUsers();
+    if(!res)
     {
         await db.createUser("admin", "adminpwd");
         console.log("Created default admin user");

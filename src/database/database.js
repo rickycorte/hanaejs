@@ -105,14 +105,13 @@ async function hasUsers()
     try
     {
         let res = await db.collection(USR_COLLECTION).findOne();
-        console.log(res);
+        //console.log(res);
         if(!res)
             return false;
     }
-    catch
-    {
-        return true;
-    }
+    catch{}
+
+    return true;
 }
 
 /**
@@ -134,7 +133,7 @@ async function createUser(username, password)
     let res = await db.collection(USR_COLLECTION).findOne({username : username});
     if(res)
     {
-        console.log(res); // TODO: remove after debug
+        //console.log(res); // TODO: remove after debug
         throw new Error("User already exists");
     }
     else

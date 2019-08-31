@@ -35,6 +35,7 @@ if(!process.env.RELEASE)
 
 const express = require('express');
 const path = require('path');
+const morgan = require("morgan");
 
 const database = require("./database/database");
 const auth = require("./web/auth");
@@ -54,9 +55,10 @@ const RELEASE = process.env.RELEASE || false;
 
 const app = express();
 
-
 function setupApp()
-{
+{  
+  app.use(morgan("short"));
+
   app.use(express.json())
   app.use(express.static(path.join(__dirname, '../static')));
 }
@@ -71,6 +73,7 @@ function setupRoutes()
       res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
     });
 }
+
 
 /* ======================================================================================== */
 // errors
@@ -108,8 +111,6 @@ async function onAppStart()
 function onAppReady()
 {
   console.log(`Listening on port ${PORT}`);
-
-  database.getBots();
 }
 
 
