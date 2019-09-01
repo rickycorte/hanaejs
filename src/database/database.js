@@ -117,8 +117,8 @@ async function hasUsers()
 /**
  * Create a new user
  * 
- * @param {*} username 
- * @param {*} password 
+ * @param {String} username 
+ * @param {String} password 
  * 
  * @returns newly created user
  */
@@ -159,8 +159,8 @@ async function createUser(username, password)
 /**
  * Authenticate a user
  * 
- * @param {string} username 
- * @param {string} password 
+ * @param {String} username 
+ * @param {String} password 
  * 
  * @returns null if user not exists/wrong username/password, user object if auth data is correct
  */
@@ -187,6 +187,34 @@ async function authUser(username, password)
 
 }
 
+
+/**
+ * Change user password
+ * 
+ * @param {String} username 
+ * @param {String} password 
+ * @param {String} new_password 
+ */
+async function changeUserPassword(username, password, new_password)
+{
+    if(!new_password || new_password.length < 8)
+        throw new Error("Password must have at least 8 characters");
+    
+    let usr = await authUser(username, password);
+    
+    if(usr)
+    {
+        let qry = { $set : { password_hash : bcrypt.hashSync(new_password, 10)}};
+        usr.password_hash = qry.$set.password_hash; 
+
+        await db.collection(USR_COLLECTION).updateOne({_id: usr._id}, qry);
+
+        console.log("Changed password for user: "+username);
+    }
+
+    return usr;
+}
+
 /* ======================================================================================== */
 // exports
 exports.init = init;
@@ -194,3 +222,4 @@ exports.getBots = getBots;
 exports.hasUsers = hasUsers;
 exports.authUser = authUser;
 exports.createUser = createUser;
+exports.changeUserPassword = changeUserPassword;

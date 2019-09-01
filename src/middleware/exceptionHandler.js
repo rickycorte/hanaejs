@@ -25,7 +25,7 @@
  * @param {*} res 
  * @param {*} next 
  */
-function exceptionHandler(req, res, next)
+function exceptionHandler(err, req, res, next)
 {
 
     console.error(err.stack);

@@ -59,6 +59,9 @@ function setupApp()
 {  
   app.use(morgan("short"));
 
+  //setup generig 500 error for exceptions (for other middlewares)
+  app.use(require("./middleware/exceptionHandler"));
+
   app.use(express.json())
   app.use(express.static(path.join(__dirname, '../static')));
 }
@@ -69,9 +72,11 @@ function setupApp()
 
 function setupRoutes()
 {
-  app.get('/', (req, res) => {
+  app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, '../static/work_in_progress.html'));
     });
+
+  app.use("/auth", auth.router)
 }
 
 

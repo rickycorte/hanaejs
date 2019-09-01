@@ -29,19 +29,16 @@ const db = require("@database/database");
 
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || "TotallySuperSecretKey";
+const JWT_TOKEN_LIFETIME = process.env.JWT_TOKEN_LIFETIME || "1h";
 
-function makeJWTToken(userID) {
-    return jwt.sign(
-        { id: userID },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_TOKEN_LIFETIME_SECONDS }
-    );
-}
 
 /* ======================================================================================== */
-// routes
+// functions
 
-
+/**
+ * Init module
+ */
 async function init()
 {
     let res = await db.hasUsers();
@@ -55,56 +52,134 @@ async function init()
 }
 
 
+/**
+ * Create JWT Token
+ * 
+ * @param {*} userID user uuid
+ * 
+ * @returns jwt token string
+ */
+function makeJWTToken(userID) {
+    return jwt.sign({ id: userID }, JWT_SECRET, { expiresIn: JWT_TOKEN_LIFETIME });
+}
+
+
+/**
+ * Handle login request
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
 async function login(req, res)
 {
+    try
+    {
+        let username = req.body.username;
+        let password = req.body.password;
 
+        let usr = await db.authUser(username, password);
+        if(usr)
+        {
+            let token = makeJWTToken(req.body["user"]);
+            res.status(200).send({ status: "ok", auth: true, token: token });
+            console.log("User '"+ username + "' logged in");
+            return;
+        }
+    }
+    catch(e)
+    {
+        console.log("Login error: "+ e.message);
+    }   
+
+    res.status(401).send({
+        result: "error",
+        auth: false,
+        message: "Could not authenticate user"
+    });
+
+    console.log("Failed login attempt for: "+ username);
 } 
 
 
 /**
+ * Handle auth check request
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+function checkAuthReply(req, res) 
+{
+    res.status(200).send({ result: "ok", auth: true, message: "Authenticated"});
+}
+
+
+/**
+ * Handle change password request
+ * @param {*} req 
+ * @param {*} res 
+ */
+async function changePassword(req, res)
+{
+    try
+    {
+        let username = req.body.username;
+        let password = req.body.password;
+        let new_password = req.body.new_password;
+
+        let usr = await db.changeUserPassword(username, password, new_password);
+        if(usr)
+        {
+            res.status(200).send({ result: "ok", message: "Updated password"});
+            return;
+        }
+
+    }
+    catch(e)
+    {
+        console.log("Unable to change password"+e.message);
+    }
+
+    res.status(401).send({ result: "error", message: "Could not authenticate user"});
+
+    console.log("Failed attempt to change '"+ username + "' "+password);
+
+}
+
+
+/**
+ * Refresh the jwt auth token with still authed
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+async function refreshToken(req, res)
+{
+    let token = makeJWTToken(req.userID);
+    res.status(200).send({ status: "ok", token: token});
+}
+
+/* ======================================================================================== */
+// routes
+
+/**
  * Check if authtoken is still valid
  */
-router.get('auth/check', checkMw, noCacheMw , (req, res) => {
-
-    res.status(200).send({
-        result: "ok",
-        auth: true,
-        message: "Authenticated"
-    });
-});
-
-
+router.get("/check", checkMw, noCacheMw , checkAuthReply);
 
 /**
  * Log the user in
  */
-router.post('auth/login', noCacheMw, async function (req, res) {
+router.post("/login", noCacheMw, login);
 
-    try {
-        console.log("Login request: %j", req.body);
-        let usr = await db.isUserInDB(req.body["user"]);
-        if(usr == true)
-        {
-            let token = makeJWTToken(req.body["user"]);
-            res.status(200).send({ status: "ok", auth: true, token: token });
-            console.log("Authenticated");
-        }
-        else
-        {
-            res.status(200).send({ status: "ok", auth: false});
-            console.log("User not found");
-        }
-    }
-    catch (err) {
-        return res.status(400).send({
-            result: "error",
-            auth: false,
-            message: "Please check your request data!" + err
-        });
-    }
+/**
+ * Chache user password
+ */
+router.post("/changePassword", noCacheMw, checkMw, changePassword);
 
-});
-
+/**
+ * Generate a new token for the current session
+ */
+router.get("/refreshToken", noCacheMw, checkMw, refreshToken);
 
 /* ======================================================================================== */
 // exports
